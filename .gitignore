@@ -1,0 +1,19 @@
+# Raw dataset (too large for git)
+data/major-crime-indicators.csv
+
+# Processed outputs (can be regenerated with pipeline.py)
+data/processed/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
