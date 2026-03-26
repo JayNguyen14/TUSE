@@ -15,7 +15,7 @@ ALL_PASS = True
 
 def check(condition: bool, description: str):
     global ALL_PASS
-    status = "✅" if condition else "❌"
+    status = "✓" if condition else "✗"
     if not condition:
         ALL_PASS = False
     print(f"  {status} {description}")
@@ -31,7 +31,7 @@ def load(filename: str):
 
 
 def verify_spatial():
-    print("\n── spatial_data.json ──")
+    print("\n-- spatial_data.json --")
     data = load("spatial_data.json")
 
     # Check expected keys
@@ -57,7 +57,7 @@ def verify_spatial():
 
 
 def verify_temporal():
-    print("\n── temporal_data.json ──")
+    print("\n-- temporal_data.json --")
     data = load("temporal_data.json")
 
     cats = {r["category"] for r in data}
@@ -78,7 +78,7 @@ def verify_temporal():
 
 
 def verify_neighbourhood():
-    print("\n── neighbourhood_data.json ──")
+    print("\n-- neighbourhood_data.json --")
     data = load("neighbourhood_data.json")
 
     # No NSA
@@ -103,7 +103,7 @@ def verify_neighbourhood():
 
 def verify_cross_view_linking():
     """Check that linking keys are consistent across all 3 datasets."""
-    print("\n── Cross-view linking ──")
+    print("\n-- Cross-view linking --")
     with open(os.path.join(OUT_DIR, "spatial_data.json")) as f:
         spatial = json.load(f)
     with open(os.path.join(OUT_DIR, "temporal_data.json")) as f:
@@ -140,9 +140,9 @@ if __name__ == "__main__":
 
     print("\n" + "=" * 50)
     if ALL_PASS:
-        print("🎉 ALL CHECKS PASSED")
+        print("All checks passed")
     else:
-        print("⚠️  SOME CHECKS FAILED — review above")
+        print("Some checks failed — review above")
     print("=" * 50)
 
     sys.exit(0 if ALL_PASS else 1)

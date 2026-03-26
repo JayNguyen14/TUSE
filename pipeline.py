@@ -12,11 +12,11 @@ consumed by the D3 dashboard:
 import os
 import pandas as pd
 
-# ── paths ────────────────────────────────────────────────────────────────
+# -- paths -----------------------------------------------------------
 RAW_CSV = os.path.join(os.path.dirname(__file__), "data", "major-crime-indicators.csv")
 OUT_DIR = os.path.join(os.path.dirname(__file__), "data", "processed")
 
-# Month name → number lookup for sorting
+# Month name -> number lookup for sorting
 MONTH_NUM = {
     "January": 1, "February": 2, "March": 3, "April": 4,
     "May": 5, "June": 6, "July": 7, "August": 8,
@@ -24,13 +24,13 @@ MONTH_NUM = {
 }
 
 
-# ── helpers ──────────────────────────────────────────────────────────────
+# -- helpers -----------------------------------------------------------
 def classify_time_of_day(hour: int) -> str:
     """Return 'Day' for hours 6-17, 'Night' otherwise."""
     return "Day" if 6 <= hour <= 17 else "Night"
 
 
-# ── Step 1: Load & Clean ────────────────────────────────────────────────
+# -- Step 1: Load & Clean -----------------------------------------------
 def load_and_clean(path: str) -> pd.DataFrame:
     """Load the raw CSV and apply common cleaning steps."""
     print(f"Loading {path} …")
@@ -65,7 +65,7 @@ def load_and_clean(path: str) -> pd.DataFrame:
     return df
 
 
-# ── Step 2: Spatial View ────────────────────────────────────────────────
+# -- Step 2: Spatial View ------------------------------------------------
 def build_spatial_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     One record per incident with only the columns needed for the
@@ -90,7 +90,7 @@ def build_spatial_data(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-# ── Step 3: Temporal View ───────────────────────────────────────────────
+# -- Step 3: Temporal View ------------------------------------------------
 def build_temporal_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Monthly aggregated counts by crime category for the interactive
@@ -123,7 +123,7 @@ def build_temporal_data(df: pd.DataFrame) -> pd.DataFrame:
     return combined
 
 
-# ── Step 4: Bar Chart View ──────────────────────────────────────────────
+# -- Step 4: Bar Chart View ------------------------------------------------
 def build_neighbourhood_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Neighbourhood-level crime counts split by Day/Night for the
@@ -163,7 +163,7 @@ def build_neighbourhood_data(df: pd.DataFrame) -> pd.DataFrame:
     return combined
 
 
-# ── Main ─────────────────────────────────────────────────────────────────
+# -- Main ----------------------------------------------------------------
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -173,21 +173,21 @@ def main():
     spatial = build_spatial_data(df)
     spatial_path = os.path.join(OUT_DIR, "spatial_data.json")
     spatial.to_json(spatial_path, orient="records")
-    print(f"  → {spatial_path}")
+    print(f"  -> {spatial_path}")
 
     print("\nBuilding temporal data …")
     temporal = build_temporal_data(df)
     temporal_path = os.path.join(OUT_DIR, "temporal_data.json")
     temporal.to_json(temporal_path, orient="records")
-    print(f"  → {temporal_path}")
+    print(f"  -> {temporal_path}")
 
     print("\nBuilding neighbourhood data …")
     neighbourhood = build_neighbourhood_data(df)
     neighbourhood_path = os.path.join(OUT_DIR, "neighbourhood_data.json")
     neighbourhood.to_json(neighbourhood_path, orient="records")
-    print(f"  → {neighbourhood_path}")
+    print(f"  -> {neighbourhood_path}")
 
-    print("\n✅ Pipeline complete.")
+    print("\n Pipeline complete.")
 
 
 if __name__ == "__main__":
