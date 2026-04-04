@@ -1,14 +1,16 @@
 """
 Data Pipeline for Toronto Urban Safety Explorer (TUSE)
 ======================================================
-Reads the raw major-crime-indicators.csv and produces 3 JSON files
+Reads the raw major-crime-indicators.csv and produces JSON files
 consumed by the D3 dashboard:
 
-  1. spatial_data.json    – per-incident records for the clustered map
-  2. temporal_data.json   – monthly time-series for the interactive timeline
-  3. neighbourhood_data.json – neighbourhood rankings with Day/Night split
+  1. spatial_data.json         – per-incident records (full detail)
+  2. spatial_clusters.json     – neighbourhood-level centroids for the map
+  3. temporal_data.json        – monthly time-series for the interactive timeline
+  4. neighbourhood_data.json   – neighbourhood rankings with Day/Night split
 """
 
+import json
 import os
 import pandas as pd
 
@@ -90,6 +92,35 @@ def build_spatial_data(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# -- Step 2b: Spatial Clusters (pre-aggregated for map) -------------------
+def build_spatial_clusters(df: pd.DataFrame) -> list[dict]:
+    """
+    Aggregate incidents to neighbourhood-level centroids with
+    category breakdowns and day/night split for the map view.
+    """
+    filtered = df[df["NEIGHBOURHOOD_158"] != "NSA"]
+
+    clusters = []
+    for (hood, hood_id), grp in filtered.groupby(["NEIGHBOURHOOD_158", "HOOD_158"]):
+        cats = grp.groupby("MCI_CATEGORY").size().to_dict()
+        tod = grp.groupby("TIME_OF_DAY").size().to_dict()
+        yearly = grp.groupby("OCC_YEAR").size().to_dict()
+        clusters.append({
+            "neighbourhood": hood,
+            "hood_id": hood_id,
+            "lat": round(grp["LAT_WGS84"].mean(), 6),
+            "lon": round(grp["LONG_WGS84"].mean(), 6),
+            "total": int(len(grp)),
+            "categories": {k: int(v) for k, v in cats.items()},
+            "day": int(tod.get("Day", 0)),
+            "night": int(tod.get("Night", 0)),
+            "yearly": {int(k): int(v) for k, v in yearly.items()},
+        })
+
+    print(f"  Spatial clusters: {len(clusters):,} neighbourhoods")
+    return clusters
+
+
 # -- Step 3: Temporal View ------------------------------------------------
 def build_temporal_data(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -126,15 +157,16 @@ def build_temporal_data(df: pd.DataFrame) -> pd.DataFrame:
 # -- Step 4: Bar Chart View ------------------------------------------------
 def build_neighbourhood_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Neighbourhood-level crime counts split by Day/Night for the
+    Neighbourhood-level crime counts split by Day/Night AND by year for the
     enriched horizontal bar chart.  Excludes 'NSA' neighbourhoods.
+    Includes year so the timeline brush can filter the bar chart.
     """
     filtered = df[df["NEIGHBOURHOOD_158"] != "NSA"]
     print(f"  Neighbourhood data: excluded {len(df) - len(filtered):,} NSA rows")
 
     grouped = (
         filtered.groupby(
-            ["NEIGHBOURHOOD_158", "HOOD_158", "MCI_CATEGORY", "TIME_OF_DAY"]
+            ["NEIGHBOURHOOD_158", "HOOD_158", "MCI_CATEGORY", "TIME_OF_DAY", "OCC_YEAR"]
         )
         .size()
         .reset_index(name="count")
@@ -144,11 +176,12 @@ def build_neighbourhood_data(df: pd.DataFrame) -> pd.DataFrame:
         "HOOD_158":          "hood_id",
         "MCI_CATEGORY":      "category",
         "TIME_OF_DAY":       "timeOfDay",
+        "OCC_YEAR":          "year",
     })
 
-    # Also produce an "All" category per neighbourhood + timeOfDay
+    # Also produce an "All" category per neighbourhood + timeOfDay + year
     all_cat = (
-        grouped.groupby(["neighbourhood", "hood_id", "timeOfDay"])["count"]
+        grouped.groupby(["neighbourhood", "hood_id", "timeOfDay", "year"])["count"]
         .sum()
         .reset_index()
     )
@@ -156,7 +189,7 @@ def build_neighbourhood_data(df: pd.DataFrame) -> pd.DataFrame:
 
     combined = pd.concat([grouped, all_cat], ignore_index=True)
     combined = combined.sort_values(
-        ["neighbourhood", "category", "timeOfDay"]
+        ["neighbourhood", "category", "timeOfDay", "year"]
     ).reset_index(drop=True)
 
     print(f"  Neighbourhood data rows: {len(combined):,}")
@@ -173,21 +206,28 @@ def main():
     spatial = build_spatial_data(df)
     spatial_path = os.path.join(OUT_DIR, "spatial_data.json")
     spatial.to_json(spatial_path, orient="records")
-    print(f"  -> {spatial_path}")
+    print(f"  → {spatial_path}")
+
+    print("\nBuilding spatial clusters …")
+    clusters = build_spatial_clusters(df)
+    clusters_path = os.path.join(OUT_DIR, "spatial_clusters.json")
+    with open(clusters_path, "w") as f:
+        json.dump(clusters, f)
+    print(f"  → {clusters_path}")
 
     print("\nBuilding temporal data …")
     temporal = build_temporal_data(df)
     temporal_path = os.path.join(OUT_DIR, "temporal_data.json")
     temporal.to_json(temporal_path, orient="records")
-    print(f"  -> {temporal_path}")
+    print(f"  → {temporal_path}")
 
     print("\nBuilding neighbourhood data …")
     neighbourhood = build_neighbourhood_data(df)
     neighbourhood_path = os.path.join(OUT_DIR, "neighbourhood_data.json")
     neighbourhood.to_json(neighbourhood_path, orient="records")
-    print(f"  -> {neighbourhood_path}")
+    print(f"  → {neighbourhood_path}")
 
-    print("\n Pipeline complete.")
+    print("\n✅ Pipeline complete.")
 
 
 if __name__ == "__main__":

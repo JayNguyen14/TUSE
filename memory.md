@@ -14,3 +14,10 @@ Using `python pandas` for data processing
 ## Visualization
 
 Using `d3javascript` for interactive visualization
+
+### Data Extracted For Visualization
+- Spatial Data: `data/processed/spatial_data.json`
+- Temporal Data: `data/processed/temporal_data.json`
+- Neighbourhood Data: `data/processed/neighbourhood_data.json`
+
+# Process
