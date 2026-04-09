@@ -1,0 +1,22 @@
+# Raw dataset (too large for git)
+data/major-crime-indicators.csv
+
+# Large processed file not used by the dashboard (95 MB)
+data/processed/spatial_data.json
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# archived
+archived/

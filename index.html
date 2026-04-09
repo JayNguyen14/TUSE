@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Toronto Urban Safety Explorer - Interactive multi-view dashboard for exploring major crime indicators across Toronto neighbourhoods.">
+  <title>TUSE: Toronto Urban Safety Explorer</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Dashboard styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header__brand">
+      <svg class="header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <div>
+        <h1 class="header__title"><span>TUSE:</span> Toronto Urban Safety Explorer</h1>
+      </div>
+    </div>
+
+    <div class="header__controls">
+      <!-- Crime category selector -->
+      <div class="control-group">
+        <span class="control-group__label">Crime Category</span>
+        <select id="category-select" class="category-select">
+          <option value="All">All Categories</option>
+          <option value="Assault">Assault</option>
+          <option value="Auto Theft">Auto Theft</option>
+          <option value="Break and Enter">Break and Enter</option>
+          <option value="Robbery">Robbery</option>
+          <option value="Theft Over">Theft Over</option>
+        </select>
+      </div>
+
+      <!-- Day/Night toggle -->
+      <div class="control-group">
+        <span class="control-group__label">Time of Day</span>
+        <div class="toggle-group" id="time-toggle">
+          <button class="toggle-btn active" data-value="all" id="toggle-all">
+            <span class="toggle-btn__icon">◐</span> All
+          </button>
+          <button class="toggle-btn" data-value="Day" id="toggle-day">
+            <span class="toggle-btn__icon">☀</span> Day
+          </button>
+          <button class="toggle-btn night" data-value="Night" id="toggle-night">
+            <span class="toggle-btn__icon">☾</span> Night
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme toggle -->
+      <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+        <span class="theme-toggle__icon" id="theme-icon">🌙</span>
+        <span id="theme-label">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard">
+
+    <!-- Spatial Map Panel -->
+    <section class="panel panel--map" id="panel-map">
+      <div class="panel__header">
+        <div class="panel__title">
+          Clustered Spatial Map
+        </div>
+        <span class="panel__badge" id="map-badge">158 clusters</span>
+      </div>
+      <div id="map-container"></div>
+      <div class="loading-overlay" id="map-loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </section>
+
+    <!-- Bar Chart Panel -->
+    <section class="panel panel--bar" id="panel-bar">
+      <div class="panel__header">
+        <div class="panel__title">
+          Enriched Bar Chart
+        </div>
+        <div class="dn-legend">
+          <div class="dn-legend__item">
+            <div class="dn-legend__swatch" style="background: var(--day-color)"></div>
+            Day
+          </div>
+          <div class="dn-legend__item">
+            <div class="dn-legend__swatch" style="background: var(--night-color)"></div>
+            Night
+          </div>
+          <button class="sort-toggle" id="sort-toggle" title="Toggle sort order">
+            <span id="sort-icon">↓</span> Desc
+          </button>
+        </div>
+      </div>
+      <div class="bar-chart-container" id="bar-chart-container">
+        <svg id="bar-chart-svg"></svg>
+      </div>
+    </section>
+
+    <!-- Timeline Panel -->
+    <section class="panel panel--timeline" id="panel-timeline">
+      <div class="panel__header">
+        <div class="panel__title">
+          Interactive Timeline
+        </div>
+        <div class="timeline-controls">
+          <div class="date-range-inputs">
+            <label class="date-label" for="date-start">From</label>
+            <input type="month" id="date-start" class="date-input">
+            <label class="date-label" for="date-end">To</label>
+            <input type="month" id="date-end" class="date-input">
+            <button class="date-clear-btn" id="date-clear" title="Clear date range">✕</button>
+          </div>
+          <span class="brush-info" id="brush-info">Drag to select a time range</span>
+        </div>
+      </div>
+      <div class="legend" id="timeline-legend"></div>
+      <div class="timeline-container" id="timeline-container">
+        <svg id="timeline-svg"></svg>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="js/spatialMap.js"></script>
+  <script src="js/timeline.js"></script>
+  <script src="js/barChart.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
